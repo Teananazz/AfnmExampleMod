@@ -1,19 +1,10 @@
 import { ModAPI } from 'afnm-types';
 // Direct import from relative assets directory (handles Vite/Webpack module resolution)
 import customBg from '../assets/new_background.jpg';
-import { setTitle, syncTitle } from './title';
-import { setBackgroundImage, syncBackgroundImage } from './background';
-import { registerPersistentButton, syncButtons } from './start_menu_buttons';
-
-
-const LOG_PREFIX = '[Mod Debug]';
-
-
-
-
-
-
-
+import { setTitle, syncTitle } from './Menu/title';
+import { setBackgroundImage, syncBackgroundImage } from './Menu/background';
+import { registerPersistentButton, syncButtons } from './Menu/start_menu_buttons';
+import { LOG_PREFIX } from "../modContent/Tools/Constants"
 
 
 // --- Combined Observer & Boot Engine ---

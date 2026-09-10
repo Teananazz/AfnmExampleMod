@@ -1,5 +1,6 @@
+import { LOG_PREFIX } from "../Tools/Constants";
 
-const LOG_PREFIX = '[Mod Debug]';
+
 // --- Persistent Button Sync Engine ---
 interface ButtonState {
   originalText: string;

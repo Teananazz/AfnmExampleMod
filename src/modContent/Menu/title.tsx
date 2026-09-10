@@ -1,4 +1,4 @@
-const LOG_PREFIX = '[Mod Debug]';
+import { LOG_PREFIX } from "../Tools/Constants";
 
 // --- Title Sync Engine ---
 let titleParent: HTMLElement | null = null;

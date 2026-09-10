@@ -1,5 +1,6 @@
+import { LOG_PREFIX } from "../Tools/Constants";
 
-const LOG_PREFIX = '[Mod Debug]';
+
 
 let targetBgUrl: string | null = null;
 
