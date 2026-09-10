@@ -1,9 +1,9 @@
 {
-  "name": "my-afnm-mod",
+  "name": "Teanana",
   "version": "0.0.1",
   "description": "A mod for AFNM",
   "author": {
-    "name": "<your name>"
+    "name": "Teanana"
   },
   "main": "dist/mod.js",
   "scripts": {
