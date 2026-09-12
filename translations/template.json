@@ -2,10 +2,12 @@
   "jsx": {
     "modContent/Components/EditModal": {
       "[string] Button Name": "",
+      "[string] Cancel": "",
       "[string] Done": "",
+      "[string] LIVE PREVIEW": "",
       "[string] Mod Window Settings": "",
-      "[string] Option 1": "",
-      "[string] Option 2": "",
+      "[string] Option 1 (Default)": "",
+      "[string] Option 2 (Dark Red)": "",
       "[string] Style": ""
     },
     "modContent/Components/TButton": {

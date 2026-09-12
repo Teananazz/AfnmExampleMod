@@ -14,28 +14,26 @@ export const TButton: React.FC<TButtonProps> = ({
   const [buttonName, setButtonName] = useState(targetName);
   const [buttonStyle, setButtonStyle] = useState('option1');
 
-  const handleNameChange = (newName: string) => {
+  // Single commit point that updates state AND native target element together
+  const handleSave = (newName: string, newStyle: string) => {
     setButtonName(newName);
+    setButtonStyle(newStyle);
+
     if (targetElement) {
+      // 1. Commit Name Change
       targetElement.textContent = newName;
+
+      // 2. Commit Style Change (with MUI overriding flags)
+      if (newStyle === 'option1') {
+        targetElement.style.removeProperty('background-color');
+        targetElement.style.removeProperty('background-image');
+        targetElement.style.removeProperty('background');
+      } else if (newStyle === 'option2') {
+        targetElement.style.setProperty('background-color', '#8b0000', 'important');
+        targetElement.style.setProperty('background-image', 'none', 'important');
+      }
     }
   };
-
-  const handleStyleChange = (newStyle: string) => {
-  setButtonStyle(newStyle);
-  if (targetElement) {
-    if (newStyle === 'option1') {
-      // Revert back to native MUI styles
-      targetElement.style.removeProperty('background-color');
-      targetElement.style.removeProperty('background-image');
-      targetElement.style.removeProperty('background');
-    } else if (newStyle === 'option2') {
-      // Override MUI's specificity rules and background gradients
-      targetElement.style.setProperty('background-color', '#8b0000', 'important');
-      targetElement.style.setProperty('background-image', 'none', 'important');
-    }
-  }
-};
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -64,14 +62,14 @@ export const TButton: React.FC<TButtonProps> = ({
         <span>Edit</span>
       </button>
 
-      <EditModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        buttonName={buttonName}
-        onButtonNameChange={handleNameChange}
-        buttonStyle={buttonStyle}
-        onButtonStyleChange={handleStyleChange}
-      />
+     <EditModal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  buttonName={buttonName}
+  buttonStyle={buttonStyle}
+  targetElement={targetElement}
+  onSave={handleSave}
+/>
     </>
   );
 };
