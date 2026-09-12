@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import EditModal from './EditModal';
+import EditModal from './Modal/EditModal';
 
 export interface TButtonProps {
   targetName?: string;
   targetElement?: HTMLElement | null;
 }
 
-export const TButton: React.FC<TButtonProps> = ({ 
+export const TButton: React.FC<TButtonProps> = ({
   targetName = 'Settings',
-  targetElement = null 
+  targetElement = null
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonName, setButtonName] = useState(targetName);
@@ -62,14 +62,14 @@ export const TButton: React.FC<TButtonProps> = ({
         <span>Edit</span>
       </button>
 
-     <EditModal
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  buttonName={buttonName}
-  buttonStyle={buttonStyle}
-  targetElement={targetElement}
-  onSave={handleSave}
-/>
+      <EditModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        buttonName={buttonName}
+        buttonStyle={buttonStyle}
+        targetElement={targetElement}
+        onSave={handleSave}
+      />
     </>
   );
 };

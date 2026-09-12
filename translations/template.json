@@ -1,11 +1,19 @@
 {
   "jsx": {
-    "modContent/Components/EditModal": {
-      "[string] Button Name": "",
+    "Components/Modal/ButtonNameInput": {
+      "[string] Button Name": ""
+    },
+    "Components/Modal/EditModal": {
+      "[string] Mod Window Settings": ""
+    },
+    "Components/Modal/LivePreview": {
+      "[string] LIVE PREVIEW": ""
+    },
+    "Components/Modal/ModalActions": {
       "[string] Cancel": "",
-      "[string] Done": "",
-      "[string] LIVE PREVIEW": "",
-      "[string] Mod Window Settings": "",
+      "[string] Done": ""
+    },
+    "Components/Modal/styleDropDown": {
       "[string] Option 1 (Default)": "",
       "[string] Option 2 (Dark Red)": "",
       "[string] Style": ""
