@@ -1,37 +1,26 @@
 import React, { useState } from 'react';
 import EditModal from './Modal/EditModal';
+import { applyElementUpdates, DEFAULT_STYLES } from './Modal/styleOptions';
 
 export interface TButtonProps {
   targetName?: string;
   targetElement?: HTMLElement | null;
 }
 
-export const TButton: React.FC<TButtonProps> = ({
+export const TButton: React.FC<TButtonProps> = ({ 
   targetName = 'Settings',
-  targetElement = null
+  targetElement = null 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonName, setButtonName] = useState(targetName);
-  const [buttonStyle, setButtonStyle] = useState('option1');
+  const [buttonStyles, setButtonStyles] = useState<Record<string, string>>(DEFAULT_STYLES);
 
-  // Single commit point that updates state AND native target element together
-  const handleSave = (newName: string, newStyle: string) => {
+  const handleSave = (newName: string, newStyles: Record<string, string>) => {
     setButtonName(newName);
-    setButtonStyle(newStyle);
+    setButtonStyles(newStyles);
 
     if (targetElement) {
-      // 1. Commit Name Change
-      targetElement.textContent = newName;
-
-      // 2. Commit Style Change (with MUI overriding flags)
-      if (newStyle === 'option1') {
-        targetElement.style.removeProperty('background-color');
-        targetElement.style.removeProperty('background-image');
-        targetElement.style.removeProperty('background');
-      } else if (newStyle === 'option2') {
-        targetElement.style.setProperty('background-color', '#8b0000', 'important');
-        targetElement.style.setProperty('background-image', 'none', 'important');
-      }
+      applyElementUpdates(targetElement, newName, newStyles);
     }
   };
 
@@ -66,7 +55,7 @@ export const TButton: React.FC<TButtonProps> = ({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         buttonName={buttonName}
-        buttonStyle={buttonStyle}
+        buttonStyles={buttonStyles}
         targetElement={targetElement}
         onSave={handleSave}
       />

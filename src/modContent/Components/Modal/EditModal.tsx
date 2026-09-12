@@ -2,39 +2,43 @@ import React, { useState, useEffect } from 'react';
 import LivePreview from './LivePreview';
 import ButtonNameInput from './ButtonNameInput';
 import StyleDropDown from './styleDropDown';
-import ModalActions from './ModalActions'
+import ModalActions from './ModalActions';
 
 export interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   buttonName: string;
-  buttonStyle: string;
+  buttonStyles: Record<string, string>;
   targetElement: HTMLElement | null;
-  onSave: (newName: string, newStyle: string) => void;
+  onSave: (newName: string, newStyles: Record<string, string>) => void;
 }
 
 export const EditModal: React.FC<EditModalProps> = ({
   isOpen,
   onClose,
   buttonName,
-  buttonStyle,
+  buttonStyles,
   targetElement,
   onSave,
 }) => {
   const [tempName, setTempName] = useState(buttonName);
-  const [tempStyle, setTempStyle] = useState(buttonStyle);
+  const [tempStyles, setTempStyles] = useState(buttonStyles);
 
   useEffect(() => {
     if (isOpen) {
       setTempName(buttonName);
-      setTempStyle(buttonStyle);
+      setTempStyles(buttonStyles);
     }
-  }, [isOpen, buttonName, buttonStyle]);
+  }, [isOpen, buttonName, buttonStyles]);
 
   if (!isOpen) return null;
 
+  const handleStyleChange = (category: string, value: string) => {
+    setTempStyles((prev) => ({ ...prev, [category]: value }));
+  };
+
   const handleDone = () => {
-    onSave(tempName, tempStyle);
+    onSave(tempName, tempStyles);
     onClose();
   };
 
@@ -74,28 +78,18 @@ export const EditModal: React.FC<EditModalProps> = ({
           </button>
         </div>
 
-        {/* Modular Child Components */}
         <LivePreview
           isOpen={isOpen}
           targetElement={targetElement}
           tempName={tempName}
-          tempStyle={tempStyle}
+          tempStyles={tempStyles}
         />
 
-        <ButtonNameInput
-          value={tempName}
-          onChange={setTempName}
-        />
+        <ButtonNameInput value={tempName} onChange={setTempName} />
 
-        <StyleDropDown
-          value={tempStyle}
-          onChange={setTempStyle}
-        />
+        <StyleDropDown styles={tempStyles} onChange={handleStyleChange} />
 
-        <ModalActions
-          onCancel={onClose}
-          onDone={handleDone}
-        />
+        <ModalActions onCancel={onClose} onDone={handleDone} />
       </div>
     </div>
   );

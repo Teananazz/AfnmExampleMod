@@ -1,4 +1,15 @@
 {
+  "data": {
+    "Components/Modal:styleOptions": {
+      "[bgStyle] option1": "",
+      "[bgStyle/label] Background Style": "",
+      "[bgStyle/options/option2/label] Option 2 (Dark Red)": "",
+      "[marginStyle] option1": "",
+      "[marginStyle/label] Margin Style": "",
+      "[marginStyle/options/option2/label] Option 2 (Custom 12px)": "",
+      "[option1/label] Option 1 (Default)": ""
+    }
+  },
   "jsx": {
     "Components/Modal/ButtonNameInput": {
       "[string] Button Name": ""
@@ -12,11 +23,6 @@
     "Components/Modal/ModalActions": {
       "[string] Cancel": "",
       "[string] Done": ""
-    },
-    "Components/Modal/styleDropDown": {
-      "[string] Option 1 (Default)": "",
-      "[string] Option 2 (Dark Red)": "",
-      "[string] Style": ""
     },
     "modContent/Components/TButton": {
       "[string] Edit": ""

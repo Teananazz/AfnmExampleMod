@@ -19,7 +19,7 @@ let isModifyingDOM = false;
 const startDOMObserver = (): void => {
   const runSync = () => {
 
-  
+
 
   };
 
@@ -61,11 +61,11 @@ export const init = (modAPI: ModAPI): void => {
   });
   const background_element: HTMLImageElement = document.getElementById('backgroundImage') as HTMLImageElement;
 
-  
+
   attachEditButtons(buttons);
 
-  
-   
+
+
 
 
 
