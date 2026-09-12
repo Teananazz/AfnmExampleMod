@@ -1,17 +1,21 @@
 import React from 'react';
 
-export interface ModModalProps {
+export interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   buttonName: string;
   onButtonNameChange: (newName: string) => void;
+  buttonStyle: string;
+  onButtonStyleChange: (newStyle: string) => void;
 }
 
-export const EditModal: React.FC<ModModalProps> = ({
+export const EditModal: React.FC<EditModalProps> = ({
   isOpen,
   onClose,
   buttonName,
   onButtonNameChange,
+  buttonStyle,
+  onButtonStyleChange,
 }) => {
   if (!isOpen) return null;
 
@@ -70,9 +74,8 @@ export const EditModal: React.FC<ModModalProps> = ({
         </div>
 
         {/* Button Name Setting Input */}
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '16px' }}>
           <label
-            htmlFor="button-name-input"
             style={{
               display: 'block',
               fontSize: '12px',
@@ -84,7 +87,6 @@ export const EditModal: React.FC<ModModalProps> = ({
             Button Name
           </label>
           <input
-            id="button-name-input"
             type="text"
             value={buttonName}
             onChange={(e) => onButtonNameChange(e.target.value)}
@@ -100,6 +102,39 @@ export const EditModal: React.FC<ModModalProps> = ({
               boxSizing: 'border-box',
             }}
           />
+        </div>
+
+        {/* Style Selector Option */}
+        <div style={{ marginBottom: '20px' }}>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12px',
+              marginBottom: '6px',
+              color: '#bac2de',
+              fontWeight: 600,
+            }}
+          >
+            Style
+          </label>
+          <select
+            value={buttonStyle}
+            onChange={(e) => onButtonStyleChange(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              fontSize: '13px',
+              backgroundColor: '#313244',
+              border: '1px solid #45475a',
+              borderRadius: '4px',
+              color: '#cdd6f4',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          >
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+          </select>
         </div>
 
         <button

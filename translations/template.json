@@ -3,7 +3,10 @@
     "modContent/Components/EditModal": {
       "[string] Button Name": "",
       "[string] Done": "",
-      "[string] Mod Window Settings": ""
+      "[string] Mod Window Settings": "",
+      "[string] Option 1": "",
+      "[string] Option 2": "",
+      "[string] Style": ""
     },
     "modContent/Components/TButton": {
       "[string] Edit": ""

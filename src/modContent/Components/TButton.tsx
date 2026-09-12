@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import EditModal from './EditModal';
 
 export interface TButtonProps {
@@ -12,14 +12,30 @@ export const TButton: React.FC<TButtonProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [buttonName, setButtonName] = useState(targetName);
+  const [buttonStyle, setButtonStyle] = useState('option1');
 
-  // Synchronize input changes with the native game button's text
   const handleNameChange = (newName: string) => {
     setButtonName(newName);
     if (targetElement) {
       targetElement.textContent = newName;
     }
   };
+
+  const handleStyleChange = (newStyle: string) => {
+  setButtonStyle(newStyle);
+  if (targetElement) {
+    if (newStyle === 'option1') {
+      // Revert back to native MUI styles
+      targetElement.style.removeProperty('background-color');
+      targetElement.style.removeProperty('background-image');
+      targetElement.style.removeProperty('background');
+    } else if (newStyle === 'option2') {
+      // Override MUI's specificity rules and background gradients
+      targetElement.style.setProperty('background-color', '#8b0000', 'important');
+      targetElement.style.setProperty('background-image', 'none', 'important');
+    }
+  }
+};
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -28,7 +44,6 @@ export const TButton: React.FC<TButtonProps> = ({
 
   return (
     <>
-      {/* Mod button always displays "Edit" */}
       <button
         onClick={handleClick}
         style={{
@@ -54,6 +69,8 @@ export const TButton: React.FC<TButtonProps> = ({
         onClose={() => setIsOpen(false)}
         buttonName={buttonName}
         onButtonNameChange={handleNameChange}
+        buttonStyle={buttonStyle}
+        onButtonStyleChange={handleStyleChange}
       />
     </>
   );
