@@ -14,7 +14,8 @@
       "[string] Done": ""
     },
     "Components/Modal/styleDropDown": {
-      "[string] No matching properties found": ""
+      "[string] No matching properties found": "",
+      "[string] Open Wheel": ""
     },
     "modContent/Components/TButton": {
       "[string] Edit": ""
