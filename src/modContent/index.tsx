@@ -5,7 +5,7 @@ import { setTitle, syncTitle } from './Menu/title';
 import { setBackgroundImage, syncBackgroundImage } from './Menu/background';
 import { registerPersistentButton, syncButtons } from './Menu/start_menu_buttons';
 
-import { attachEditButtons } from './Menu/EditButtons';
+import { attachGlobalEditor } from './Menu/EditButtons';
 import log from './log';
 
 
@@ -62,7 +62,7 @@ export const init = (modAPI: ModAPI): void => {
   const background_element: HTMLImageElement = document.getElementById('backgroundImage') as HTMLImageElement;
 
 
-  attachEditButtons(buttons);
+  attachGlobalEditor();
 
 
 

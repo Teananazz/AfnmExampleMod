@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import LivePreview from './LivePreview';
-import ButtonNameInput from './ButtonNameInput';
-import StyleDropDown from './styleDropDown';
-import ModalActions from './ModalActions';
-import { detectElementStyles, applyElementUpdates } from './styleOptions';
+import React from 'react';
+import StyleDropDown from '../Modal/styleDropDown';
 
 export interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   buttonName: string;
   buttonStyles: Record<string, string>;
+  buttonAttributes?: Record<string, string>;
   targetElement: HTMLElement | null;
-  onSave: (newName: string, newStyles: Record<string, string>) => void;
+  onChangeDraft?: (name: string, styles: Record<string, string>, attrs: Record<string, string>) => void;
+  onSave: (newName: string, newStyles: Record<string, string>, tagAttributes?: Record<string, string>) => void;
+  embedded?: boolean;
 }
 
 export const EditModal: React.FC<EditModalProps> = ({
@@ -19,103 +18,156 @@ export const EditModal: React.FC<EditModalProps> = ({
   onClose,
   buttonName,
   buttonStyles,
+  buttonAttributes = {},
   targetElement,
+  onChangeDraft,
   onSave,
+  embedded = false,
 }) => {
-  const [tempName, setTempName] = useState(buttonName);
-  const [tempStyles, setTempStyles] = useState<Record<string, string>>(buttonStyles);
+  if (!isOpen || !targetElement) return null;
 
-  useEffect(() => {
-    if (isOpen) {
-      setTempName(buttonName);
-      // Strictly load ONLY what the user previously saved. No forced defaults.
-      setTempStyles(buttonStyles);
-    }
-  }, [isOpen, buttonName, buttonStyles]);
+  const tagName = targetElement.tagName.toLowerCase();
 
-  if (!isOpen) return null;
-
-  const handleStyleChange = (category: string, value: string) => {
-    setTempStyles((prev) => ({
-      ...prev,
-      [category]: value,
-    }));
+  const handleNameChange = (val: string) => {
+    if (onChangeDraft) onChangeDraft(val, buttonStyles, buttonAttributes);
   };
 
-  const handleStyleRemove = (category: string) => {
-    setTempStyles((prev) => {
-      const updated = { ...prev };
-      delete updated[category];
-      return updated;
-    });
+  const handleAttributeChange = (key: string, value: string) => {
+    if (onChangeDraft) {
+      onChangeDraft(buttonName, buttonStyles, { ...buttonAttributes, [key]: value });
+    }
   };
 
-  const handleDone = () => {
-    if (targetElement) {
-      applyElementUpdates(targetElement, tempName, tempStyles);
+  const handleStyleChange = (prop: string, val: string) => {
+    if (onChangeDraft) {
+      onChangeDraft(buttonName, { ...buttonStyles, [prop]: val }, buttonAttributes);
     }
-    onSave(tempName, tempStyles);
-    onClose();
+  };
+
+  const handleStyleRemove = (prop: string) => {
+    if (onChangeDraft) {
+      const nextStyles = { ...buttonStyles };
+      delete nextStyles[prop];
+      onChangeDraft(buttonName, nextStyles, buttonAttributes);
+    }
+  };
+
+  const handleSave = () => {
+    onSave(buttonName, buttonStyles, buttonAttributes);
+    if (!embedded) onClose();
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: 'rgba(0, 0, 0, 0.65)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 99999,
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '380px',
-          maxWidth: '90vw',
-          padding: '16px',
-          backgroundColor: '#1e1e2e',
-          border: '1px solid #45475a',
-          borderRadius: '8px',
-          color: '#cdd6f4',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
-          fontFamily: 'sans-serif',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <h3 style={{ margin: 0, fontSize: '15px', color: '#f5e0dc' }}>Mod Window Settings</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#a6adc8', fontSize: '16px', cursor: 'pointer' }}>
-            ✕
-          </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', height: '100%' }}>
+      {tagName !== 'img' && (
+        <div>
+          <label style={labelStyle}>Element HTML / Text Content</label>
+          <input
+            type="text"
+            value={buttonName}
+            onChange={(e) => handleNameChange(e.target.value)}
+            placeholder="Text or HTML content..."
+            style={inputStyle}
+          />
         </div>
+      )}
 
-        <LivePreview
-          isOpen={isOpen}
-          targetElement={targetElement}
-          tempName={tempName}
-          tempStyles={tempStyles}
-        />
+      {tagName === 'img' && (
+        <div style={sectionBoxStyle}>
+          <label style={sectionHeaderStyle}>⚙️ Unique &lt;img&gt; Attributes</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div>
+              <label style={labelStyle}>Image Source URL (src)</label>
+              <input
+                type="text"
+                value={buttonAttributes.src || ''}
+                onChange={(e) => handleAttributeChange('src', e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Alt Text (alt)</label>
+              <input
+                type="text"
+                value={buttonAttributes.alt || ''}
+                onChange={(e) => handleAttributeChange('alt', e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Width (px)</label>
+                <input
+                  type="text"
+                  value={buttonAttributes.width || ''}
+                  onChange={(e) => handleAttributeChange('width', e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Height (px)</label>
+                <input
+                  type="text"
+                  value={buttonAttributes.height || ''}
+                  onChange={(e) => handleAttributeChange('height', e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-        <ButtonNameInput value={tempName} onChange={setTempName} />
+      {tagName === 'a' && (
+        <div style={sectionBoxStyle}>
+          <label style={sectionHeaderStyle}>⚙️ Unique &lt;a&gt; Attributes</label>
+          <div>
+            <label style={labelStyle}>Destination URL (href)</label>
+            <input
+              type="text"
+              value={buttonAttributes.href || ''}
+              onChange={(e) => handleAttributeChange('href', e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+      )}
 
+      <div>
+        <label style={labelStyle}>CSS Styles</label>
         <StyleDropDown
-          styles={tempStyles}
+          styles={buttonStyles}
           targetElement={targetElement}
           onChange={handleStyleChange}
           onRemove={handleStyleRemove}
         />
+      </div>
 
-        <ModalActions onCancel={onClose} onDone={handleDone} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: 'auto' }}>
+        <button
+          type="button"
+          onClick={handleSave}
+          style={{
+            padding: '8px 16px',
+            fontSize: '12px',
+            fontWeight: 700,
+            backgroundColor: '#89b4fa',
+            color: '#11111b',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+          }}
+        >
+          Apply Changes
+        </button>
       </div>
     </div>
   );
 };
+
+const labelStyle: React.CSSProperties = { display: 'block', fontSize: '11px', color: '#a6adc8', marginBottom: '4px', fontWeight: 600 };
+const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: '12px', backgroundColor: '#181825', border: '1px solid #45475a', borderRadius: '6px', color: '#cdd6f4', outline: 'none', boxSizing: 'border-box' };
+const sectionBoxStyle: React.CSSProperties = { padding: '12px', backgroundColor: '#181825', borderRadius: '8px', border: '1px solid #313244' };
+const sectionHeaderStyle: React.CSSProperties = { display: 'block', fontSize: '11px', color: '#89b4fa', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' };
 
 export default EditModal;

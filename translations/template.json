@@ -1,13 +1,24 @@
 {
+  "data": {
+    "modContent/Components:TGlobalEditor": {
+      "[backdropFilter] blur(4px)": ""
+    }
+  },
   "jsx": {
     "Components/Modal/ButtonNameInput": {
       "[string] Button Name": ""
     },
     "Components/Modal/EditModal": {
-      "[string] Mod Window Settings": ""
-    },
-    "Components/Modal/LivePreview": {
-      "[string] Live Preview": ""
+      "[string] ⚙️ Unique &lt;a&gt; Attributes": "",
+      "[string] ⚙️ Unique &lt;img&gt; Attributes": "",
+      "[string] Alt Text (alt)": "",
+      "[string] Apply Changes": "",
+      "[string] CSS Styles": "",
+      "[string] Destination URL (href)": "",
+      "[string] Element HTML / Text Content": "",
+      "[string] Height (px)": "",
+      "[string] Image Source URL (src)": "",
+      "[string] Width (px)": ""
     },
     "Components/Modal/ModalActions": {
       "[string] Cancel": "",
@@ -19,6 +30,11 @@
     },
     "modContent/Components/TButton": {
       "[string] Edit": ""
+    },
+    "modContent/Components/TGlobalEditor": {
+      "[string] ✏️ Edit Page Elements": "",
+      "[string] Page Element Inspector": "",
+      "[string] Select Element": ""
     }
   }
 }

@@ -1,116 +1,124 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export interface LivePreviewProps {
   isOpen: boolean;
   targetElement: HTMLElement | null;
   tempName: string;
   tempStyles: Record<string, string>;
+  tempAttributes?: Record<string, string>;
 }
+
+const toKebabCase = (str: string) => {
+  return str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+};
 
 export const LivePreview: React.FC<LivePreviewProps> = ({
   isOpen,
   targetElement,
   tempName,
   tempStyles,
+  tempAttributes = {},
 }) => {
-  if (!isOpen) return null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Extract baseline styling or computed styles from the target element for preview matching
-  const computed = targetElement ? window.getComputedStyle(targetElement) : null;
-  
-  const baseBgImage = computed ? computed.getPropertyValue('background-image') : 'none';
-  const baseBgColor = computed ? computed.getPropertyValue('background-color') : '#2b2d42';
-  const baseColor = computed ? computed.getPropertyValue('color') : '#ffffff';
-  const basePadding = computed ? computed.getPropertyValue('padding') : '6px 12px';
-  const baseBorder = computed ? computed.getPropertyValue('border') : '1px solid #4a4e69';
-  const baseRadius = computed ? computed.getPropertyValue('border-radius') : '4px';
-  const baseFontSize = computed ? computed.getPropertyValue('font-size') : '13px';
-  const baseFontWeight = computed ? computed.getPropertyValue('font-weight') : '600';
+  useEffect(() => {
+    if (!isOpen || !targetElement || !containerRef.current) return;
 
-  // Build temporary style overrides based on what the user is editing in the modal
-  const previewStyle: React.CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    padding: basePadding,
-    fontSize: baseFontSize,
-    fontWeight: baseFontWeight ? (baseFontWeight as any) : 600,
-    color: baseColor,
-    background: baseBgImage !== 'none' ? baseBgImage : baseBgColor,
-    border: baseBorder,
-    borderRadius: baseRadius,
-    cursor: 'pointer',
-    transition: 'all 0.1s ease',
-  };
+    const updatePreview = () => {
+      if (!containerRef.current) return;
+      
+      // Deep clone the element to capture all current classes and structure
+      const clone = targetElement.cloneNode(true) as HTMLElement;
+      const tagName = clone.tagName.toLowerCase();
 
-  // Apply real-time overrides from tempStyles
-  Object.entries(tempStyles).forEach(([prop, value]) => {
-    if (value === undefined || value === '') return;
+      // Fix: Only update innerHTML if the text actually changed.
+      // Re-assigning identical HTML destroys internal React/MUI bindings and spans inside the clone.
+      if (tagName !== 'img' && tempName !== undefined && tempName !== targetElement.innerHTML) {
+        clone.innerHTML = tempName;
+      }
 
-    let finalVal = value;
-    if (
-      !isNaN(Number(value)) &&
-      ['margin', 'padding', 'width', 'height', 'font-size', 'radius', 'gap', 'top', 'bottom', 'left', 'right'].some(
-        (k) => prop.includes(k)
-      )
-    ) {
-      finalVal = `${value}px`;
-    }
+      // Apply attribute modifications (src, href, width, height, alt)
+      Object.entries(tempAttributes).forEach(([key, val]) => {
+        if (val !== undefined && val !== '') {
+          clone.setAttribute(key, val);
+        } else {
+          clone.removeAttribute(key);
+        }
+      });
 
-    if (prop === 'background-color') {
-      // If user explicitly changes the background via the color picker tool, override image layer
-      previewStyle.backgroundColor = finalVal;
-      previewStyle.backgroundImage = 'none';
-    } else if (prop === 'background' || prop === 'background-image') {
-      previewStyle.background = finalVal;
-    } else if (prop === 'color') {
-      previewStyle.color = finalVal;
-    } else if (prop === 'border') {
-      previewStyle.border = finalVal;
-    } else if (prop.includes('radius')) {
-      previewStyle.borderRadius = finalVal;
-    } else if (prop === 'font-size') {
-      previewStyle.fontSize = finalVal;
-    } else if (prop === 'padding') {
-      previewStyle.padding = finalVal;
-    }
-  });
+      // Apply inline style adjustments forcefully with !important
+      Object.entries(tempStyles).forEach(([key, val]) => {
+        const cssKey = key.includes('-') ? key : toKebabCase(key);
+        if (val) {
+          clone.style.setProperty(cssKey, val, 'important');
+          
+          // Fix: MUI and game buttons often use 'background' instead of 'background-color'. 
+          // We force override both to ensure visibility over gradients and internal layers.
+          if (cssKey === 'background-color') {
+            clone.style.setProperty('background', val, 'important');
+          }
+        } else {
+          clone.style.removeProperty(cssKey);
+          if (cssKey === 'background-color') {
+            clone.style.removeProperty('background');
+          }
+        }
+      });
+
+      // Neutralize layout breaking constraints for sandbox preview container
+      clone.style.setProperty('position', 'relative', 'important');
+      clone.style.setProperty('top', 'auto', 'important');
+      clone.style.setProperty('left', 'auto', 'important');
+      clone.style.setProperty('right', 'auto', 'important');
+      clone.style.setProperty('bottom', 'auto', 'important');
+      clone.style.setProperty('transform', 'none', 'important');
+      clone.style.setProperty('margin', '0', 'important');
+      clone.style.setProperty('max-width', '100%', 'important');
+      clone.style.setProperty('pointer-events', 'none', 'important');
+
+      containerRef.current.innerHTML = '';
+      containerRef.current.appendChild(clone);
+    };
+
+    // Use requestAnimationFrame to prevent dropped paint frames during rapid color-picker updates
+    const rafId = requestAnimationFrame(updatePreview);
+    return () => cancelAnimationFrame(rafId);
+    
+  }, [isOpen, targetElement, tempName, tempStyles, tempAttributes]);
+
+  if (!isOpen || !targetElement) return null;
 
   return (
     <div
       style={{
-        marginBottom: '16px',
-        padding: '16px',
-        backgroundColor: '#11111b',
-        borderRadius: '6px',
-        border: '1px solid #45475a',
+        padding: '12px 16px',
+        backgroundColor: '#181825',
+        border: '1px solid #313244',
+        borderRadius: '8px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
         gap: '8px',
+        flexShrink: 0,
       }}
     >
-      <span style={{ fontSize: '11px', color: '#a6adc8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-        Live Preview
-      </span>
+      <div style={{ fontSize: '11px', fontWeight: 700, color: '#a6adc8', textTransform: 'uppercase' }}>
+        👁️ Live Preview (&lt;{targetElement.tagName.toLowerCase()}&gt;)
+      </div>
       <div
         style={{
-          padding: '16px',
-          width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxSizing: 'border-box',
-          background: '#181825',
-          borderRadius: '4px',
-          overflow: 'hidden',
+          minHeight: '90px',
+          maxHeight: '220px',
+          padding: '12px',
+          backgroundColor: '#11111b',
+          borderRadius: '6px',
+          border: '1px dashed #45475a',
+          overflow: 'auto',
         }}
-      >
-        <div style={previewStyle}>
-          {tempName || 'Button'}
-        </div>
-      </div>
+        ref={containerRef}
+      />
     </div>
   );
 };
