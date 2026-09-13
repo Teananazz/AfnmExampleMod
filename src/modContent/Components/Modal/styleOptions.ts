@@ -1,62 +1,131 @@
-export interface StyleCategoryConfig {
+export interface DynamicStyleConfig {
   label: string;
   cssProperty: string;
   inputType: 'color' | 'text';
-  defaultValue: string;
+  currentValue: string;
 }
 
-export const STYLE_CONFIG: Record<string, StyleCategoryConfig> = {
-  bgStyle: {
-    label: 'Background Color',
-    cssProperty: 'background-color',
-    inputType: 'color',
-    defaultValue: '#8b0000',
-  },
-  marginStyle: {
-    label: 'Margin',
-    cssProperty: 'margin',
-    inputType: 'text',
-    defaultValue: '12px',
-  },
-  paddingStyle: {
-    label: 'Padding',
-    cssProperty: 'padding',
-    inputType: 'text',
-    defaultValue: '16px',
-  },
-  widthStyle: {
-    label: 'Width',
-    cssProperty: 'width',
-    inputType: 'text',
-    defaultValue: '100%',
-  },
-  heightStyle: {
-    label: 'Height',
-    cssProperty: 'height',
-    inputType: 'text',
-    defaultValue: 'auto',
-  },
-  borderStyle: {
-    label: 'Border',
-    cssProperty: 'border',
-    inputType: 'text',
-    defaultValue: '1px solid #45475a',
-  },
-  shadowStyle: {
-    label: 'Box Shadow',
-    cssProperty: 'box-shadow',
-    inputType: 'text',
-    defaultValue: '0 4px 6px -1px rgba(0,0,0,0.1)',
-  },
-  opacityStyle: {
-    label: 'Opacity',
-    cssProperty: 'opacity',
-    inputType: 'text',
-    defaultValue: '0.9',
-  },
+const formatLabel = (prop: string): string => {
+  return prop
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
-export const DEFAULT_STYLES: Record<string, string> = {};
+const rgbToHex = (val: string): string => {
+  if (!val) return '#ffffff';
+  if (val.startsWith('#')) {
+    if (val.length === 4) {
+      return `#${val[1]}${val[1]}${val[2]}${val[2]}${val[3]}${val[3]}`;
+    }
+    return val;
+  }
+
+  const rgbValues = val.match(/\d+/g);
+  if (rgbValues && rgbValues.length >= 3) {
+    const r = parseInt(rgbValues[0], 10).toString(16).padStart(2, '0');
+    const g = parseInt(rgbValues[1], 10).toString(16).padStart(2, '0');
+    const b = parseInt(rgbValues[2], 10).toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`;
+  }
+  return '#ffffff';
+};
+
+/**
+ * Captures full gradients or solid background colors, traversing up the DOM if transparent.
+ */
+const getActualBackgroundColor = (element: HTMLElement): string => {
+  let curr: HTMLElement | null = element;
+  while (curr) {
+    const computed = window.getComputedStyle(curr);
+    const bgImage = computed.getPropertyValue('background-image');
+    const bgColor = computed.getPropertyValue('background-color');
+
+    // Return the full gradient string if present
+    if (bgImage && bgImage !== 'none' && bgImage.includes('gradient')) {
+      return bgImage;
+    }
+
+    if (bgColor && bgColor !== 'transparent' && bgColor !== 'rgba(0, 0, 0, 0)') {
+      return rgbToHex(bgColor);
+    }
+    curr = curr.parentElement;
+  }
+  return '#ffffff';
+};
+
+const getActualTextColor = (element: HTMLElement): string => {
+  const computed = window.getComputedStyle(element);
+  const color = computed.getPropertyValue('color');
+
+  if (color && color !== 'transparent' && color !== 'rgba(0, 0, 0, 0)') {
+    return rgbToHex(color);
+  }
+
+  const child = element.querySelector('span, p, a, div');
+  if (child) {
+    const childColor = window.getComputedStyle(child).getPropertyValue('color');
+    if (childColor && childColor !== 'transparent' && childColor !== 'rgba(0, 0, 0, 0)') {
+      return rgbToHex(childColor);
+    }
+  }
+
+  return '#000000';
+};
+
+export const getLivePropertyValue = (
+  element: HTMLElement | null,
+  prop: string
+): string => {
+  if (!element) return '';
+
+  if (prop === 'background-color' || prop === 'background') {
+    return getActualBackgroundColor(element);
+  }
+  if (prop === 'color') return getActualTextColor(element);
+
+  const computed = window.getComputedStyle(element);
+  const rawVal = computed.getPropertyValue(prop).trim();
+
+  if (rawVal.includes('gradient')) {
+    return rawVal;
+  }
+
+  if (prop.includes('color') || prop === 'fill' || prop === 'stroke') {
+    return rgbToHex(rawVal);
+  }
+
+  return rawVal;
+};
+
+export const detectElementStyles = (
+  element: HTMLElement | null
+): Record<string, DynamicStyleConfig> => {
+  if (!element) return {};
+
+  const computed = window.getComputedStyle(element);
+  const detected: Record<string, DynamicStyleConfig> = {};
+
+  for (let i = 0; i < computed.length; i++) {
+    const prop = computed[i];
+    if (prop.startsWith('-') || prop.startsWith('webkit')) continue;
+
+    const rawVal = computed.getPropertyValue(prop).trim();
+    if (!rawVal || rawVal === 'none' || rawVal === 'initial') continue;
+
+    const isGradient = rawVal.includes('gradient');
+    const isColor = !isGradient && (prop.includes('color') || prop === 'fill' || prop === 'stroke');
+
+    detected[prop] = {
+      label: formatLabel(prop),
+      cssProperty: prop,
+      inputType: isColor ? 'color' : 'text',
+      currentValue: rawVal,
+    };
+  }
+
+  return detected;
+};
 
 export const applyElementUpdates = (
   element: HTMLElement,
@@ -65,58 +134,60 @@ export const applyElementUpdates = (
 ) => {
   if (!element) return;
 
-  // 1. SAFELY update text inside MUI button structure
   if (name !== undefined) {
-    const replaceTextContent = (node: Node): boolean => {
-      for (let i = 0; i < node.childNodes.length; i++) {
-        const child = node.childNodes[i];
-
-        if (
-          child.nodeType === Node.ELEMENT_NODE &&
-          (child as HTMLElement).className?.includes('TouchRipple')
-        ) {
-          continue;
+    let textUpdated = false;
+    const walk = (n: Node) => {
+      if (n.nodeType === Node.TEXT_NODE) {
+        if (n.textContent && n.textContent.trim() !== '') {
+          n.textContent = name;
+          textUpdated = true;
         }
-
-        if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim() !== '') {
-          child.textContent = name;
-          return true;
-        } else if (child.nodeType === Node.ELEMENT_NODE) {
-          if (replaceTextContent(child)) return true;
+      } else if (n.nodeType === Node.ELEMENT_NODE) {
+        const el = n as HTMLElement;
+        if (
+          el.tagName.toLowerCase() === 'svg' ||
+          (el.className && typeof el.className === 'string' && el.className.includes('TouchRipple'))
+        ) {
+          return;
+        }
+        for (let i = 0; i < n.childNodes.length; i++) {
+          if (textUpdated) break;
+          walk(n.childNodes[i]);
         }
       }
-      return false;
     };
-
-    const foundText = replaceTextContent(element);
-    if (!foundText) {
-      element.innerText = name;
-    }
+    walk(element);
   }
 
-  // 2. Clear managed style properties
-  Object.values(STYLE_CONFIG).forEach((config) => {
-    element.style.removeProperty(config.cssProperty);
-  });
-  element.style.removeProperty('background-image');
+  if (typeof (element as any)._originalStyles === 'undefined') {
+    (element as any)._originalStyles = element.style.cssText;
+  } else {
+    element.style.cssText = (element as any)._originalStyles;
+  }
 
-  // 3. Apply active styles directly
-  Object.entries(STYLE_CONFIG).forEach(([categoryKey, config]) => {
-    let value = styles[categoryKey];
-
+  Object.entries(styles).forEach(([prop, value]) => {
     if (value !== undefined && value !== '') {
-      if (categoryKey === 'bgStyle') {
-        element.style.setProperty('background-color', value, 'important');
-        element.style.setProperty('background-image', 'none', 'important');
-      } else {
-        // Auto-append px to numeric values for properties like padding, margin, width, height
-        if (
-          !isNaN(Number(value)) &&
-          ['marginStyle', 'paddingStyle', 'widthStyle', 'heightStyle'].includes(categoryKey)
-        ) {
-          value = `${value}px`;
+      let finalVal = value;
+
+      if (
+        !isNaN(Number(value)) &&
+        ['margin', 'padding', 'width', 'height', 'font-size', 'radius', 'gap', 'top', 'bottom', 'left', 'right'].some(
+          (k) => prop.includes(k)
+        )
+      ) {
+        finalVal = `${value}px`;
+      }
+
+      if (prop === 'background-color' || prop === 'background') {
+        if (finalVal.includes('gradient')) {
+          element.style.setProperty('background', finalVal, 'important');
+          element.style.setProperty('background-color', 'transparent', 'important');
+        } else {
+          element.style.setProperty('background-color', finalVal, 'important');
+          element.style.setProperty('background-image', 'none', 'important');
         }
-        element.style.setProperty(config.cssProperty, value, 'important');
+      } else {
+        element.style.setProperty(prop, finalVal, 'important');
       }
     }
   });

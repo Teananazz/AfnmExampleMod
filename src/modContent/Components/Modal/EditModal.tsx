@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import LivePreview from './LivePreview';
 import ButtonNameInput from './ButtonNameInput';
 import StyleDropDown from './styleDropDown';
 import ModalActions from './ModalActions';
+import { detectElementStyles, applyElementUpdates } from './styleOptions';
 
 export interface EditModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const EditModal: React.FC<EditModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setTempName(buttonName);
+      // Strictly load ONLY what the user previously saved. No forced defaults.
       setTempStyles(buttonStyles);
     }
   }, [isOpen, buttonName, buttonStyles]);
@@ -49,6 +51,9 @@ export const EditModal: React.FC<EditModalProps> = ({
   };
 
   const handleDone = () => {
+    if (targetElement) {
+      applyElementUpdates(targetElement, tempName, tempStyles);
+    }
     onSave(tempName, tempStyles);
     onClose();
   };
@@ -72,18 +77,20 @@ export const EditModal: React.FC<EditModalProps> = ({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '420px',
-          padding: '20px',
+          width: '380px',
+          maxWidth: '90vw',
+          padding: '16px',
           backgroundColor: '#1e1e2e',
           border: '1px solid #45475a',
           borderRadius: '8px',
           color: '#cdd6f4',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
           fontFamily: 'sans-serif',
+          boxSizing: 'border-box',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', color: '#f5e0dc' }}>Mod Window Settings</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <h3 style={{ margin: 0, fontSize: '15px', color: '#f5e0dc' }}>Mod Window Settings</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#a6adc8', fontSize: '16px', cursor: 'pointer' }}>
             ✕
           </button>
@@ -100,6 +107,7 @@ export const EditModal: React.FC<EditModalProps> = ({
 
         <StyleDropDown
           styles={tempStyles}
+          targetElement={targetElement}
           onChange={handleStyleChange}
           onRemove={handleStyleRemove}
         />

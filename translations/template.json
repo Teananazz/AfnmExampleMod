@@ -1,19 +1,4 @@
 {
-  "data": {
-    "Components/Modal:styleOptions": {
-      "[bgStyle/label] Background Color": "",
-      "[borderStyle/defaultValue] 1px solid #45475a": "",
-      "[borderStyle/label] Border": "",
-      "[heightStyle/label] Height": "",
-      "[marginStyle/label] Margin": "",
-      "[opacityStyle/defaultValue] 0.9": "",
-      "[opacityStyle/label] Opacity": "",
-      "[paddingStyle/label] Padding": "",
-      "[shadowStyle/label] Box Shadow": "",
-      "[widthStyle/defaultValue] 100%": "",
-      "[widthStyle/label] Width": ""
-    }
-  },
   "jsx": {
     "Components/Modal/ButtonNameInput": {
       "[string] Button Name": ""
@@ -22,11 +7,14 @@
       "[string] Mod Window Settings": ""
     },
     "Components/Modal/LivePreview": {
-      "[string] LIVE PREVIEW": ""
+      "[string] Live Preview": ""
     },
     "Components/Modal/ModalActions": {
       "[string] Cancel": "",
       "[string] Done": ""
+    },
+    "Components/Modal/styleDropDown": {
+      "[string] No matching properties found": ""
     },
     "modContent/Components/TButton": {
       "[string] Edit": ""

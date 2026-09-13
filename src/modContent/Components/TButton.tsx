@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import EditModal from './Modal/EditModal';
-import { applyElementUpdates, DEFAULT_STYLES } from './Modal/styleOptions';
+import { applyElementUpdates } from './Modal/styleOptions';
 
 export interface TButtonProps {
   targetName?: string;
@@ -14,16 +14,14 @@ export const TButton: React.FC<TButtonProps> = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [buttonName, setButtonName] = useState(targetName);
-  const [buttonStyles, setButtonStyles] = useState<Record<string, string>>(DEFAULT_STYLES);
+  // Initialize with an empty object so no styles are forced or pre-populated by default
+  const [buttonStyles, setButtonStyles] = useState<Record<string, string>>({});
 
-  // Determine the actual element to modify (the passed MUI button, or this button itself)
   const actualTarget = targetElement || buttonRef.current;
 
-  // Sync initial button name if target element exists
   useEffect(() => {
     if (actualTarget) {
       const currentText = actualTarget.textContent?.trim();
-      // Ignore syncing if the target is just this "Edit" button itself
       if (currentText && currentText !== 'Edit') {
         setButtonName(currentText);
       }
@@ -34,7 +32,6 @@ export const TButton: React.FC<TButtonProps> = ({
     setButtonName(newName);
     setButtonStyles(newStyles);
 
-    // Apply updates directly to the real DOM node so "Done" instantly saves it
     if (actualTarget) {
       applyElementUpdates(actualTarget, newName, newStyles);
     }
@@ -65,7 +62,6 @@ export const TButton: React.FC<TButtonProps> = ({
           userSelect: 'none',
         }}
       >
-        {/* Reverted to just saying "Edit" */}
         <span>Edit</span>
       </button>
 
@@ -74,7 +70,7 @@ export const TButton: React.FC<TButtonProps> = ({
         onClose={() => setIsOpen(false)}
         buttonName={buttonName}
         buttonStyles={buttonStyles}
-        targetElement={actualTarget} // Pass the resolved target to the modal
+        targetElement={actualTarget}
         onSave={handleSave}
       />
     </>
