@@ -1,13 +1,17 @@
 {
   "data": {
     "Components/Modal:styleOptions": {
-      "[bgStyle] option1": "",
-      "[bgStyle/label] Background Style": "",
-      "[bgStyle/options/option2/label] Option 2 (Dark Red)": "",
-      "[marginStyle] option1": "",
-      "[marginStyle/label] Margin Style": "",
-      "[marginStyle/options/option2/label] Option 2 (Custom 12px)": "",
-      "[option1/label] Option 1 (Default)": ""
+      "[bgStyle/label] Background Color": "",
+      "[borderStyle/defaultValue] 1px solid #45475a": "",
+      "[borderStyle/label] Border": "",
+      "[heightStyle/label] Height": "",
+      "[marginStyle/label] Margin": "",
+      "[opacityStyle/defaultValue] 0.9": "",
+      "[opacityStyle/label] Opacity": "",
+      "[paddingStyle/label] Padding": "",
+      "[shadowStyle/label] Box Shadow": "",
+      "[widthStyle/defaultValue] 100%": "",
+      "[widthStyle/label] Width": ""
     }
   },
   "jsx": {

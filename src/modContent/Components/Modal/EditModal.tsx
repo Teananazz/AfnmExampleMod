@@ -22,7 +22,7 @@ export const EditModal: React.FC<EditModalProps> = ({
   onSave,
 }) => {
   const [tempName, setTempName] = useState(buttonName);
-  const [tempStyles, setTempStyles] = useState(buttonStyles);
+  const [tempStyles, setTempStyles] = useState<Record<string, string>>(buttonStyles);
 
   useEffect(() => {
     if (isOpen) {
@@ -34,7 +34,18 @@ export const EditModal: React.FC<EditModalProps> = ({
   if (!isOpen) return null;
 
   const handleStyleChange = (category: string, value: string) => {
-    setTempStyles((prev) => ({ ...prev, [category]: value }));
+    setTempStyles((prev) => ({
+      ...prev,
+      [category]: value,
+    }));
+  };
+
+  const handleStyleRemove = (category: string) => {
+    setTempStyles((prev) => {
+      const updated = { ...prev };
+      delete updated[category];
+      return updated;
+    });
   };
 
   const handleDone = () => {
@@ -87,7 +98,11 @@ export const EditModal: React.FC<EditModalProps> = ({
 
         <ButtonNameInput value={tempName} onChange={setTempName} />
 
-        <StyleDropDown styles={tempStyles} onChange={handleStyleChange} />
+        <StyleDropDown
+          styles={tempStyles}
+          onChange={handleStyleChange}
+          onRemove={handleStyleRemove}
+        />
 
         <ModalActions onCancel={onClose} onDone={handleDone} />
       </div>

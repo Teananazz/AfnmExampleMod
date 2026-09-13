@@ -15,27 +15,44 @@ export const LivePreview: React.FC<LivePreviewProps> = ({
   tempStyles,
 }) => {
   const previewContainerRef = useRef<HTMLDivElement>(null);
-  const clonedElementRef = useRef<HTMLElement | null>(null);
+  const cloneRef = useRef<HTMLElement | null>(null);
 
+  // 1. Create the clone ONCE when the modal opens
   useEffect(() => {
-    if (isOpen && targetElement && previewContainerRef.current) {
-      const clone = targetElement.cloneNode(true) as HTMLElement;
-      clone.removeAttribute('id');
-      clone.style.pointerEvents = 'none';
+    if (!isOpen || !previewContainerRef.current) return;
 
-      previewContainerRef.current.innerHTML = '';
-      previewContainerRef.current.appendChild(clone);
-      clonedElementRef.current = clone;
+    previewContainerRef.current.innerHTML = '';
 
-      applyElementUpdates(clone, tempName, tempStyles);
+    let clone: HTMLElement;
+    if (targetElement) {
+      clone = targetElement.cloneNode(true) as HTMLElement;
+    } else {
+      // Fallback if target element is missing
+      clone = document.createElement('button');
+      clone.style.padding = '8px 16px';
+      clone.style.borderRadius = '4px';
+      clone.style.border = '1px solid #ccc';
+      clone.style.backgroundColor = '#2b2d42';
+      clone.style.color = '#fff';
     }
+
+    clone.removeAttribute('id');
+    clone.style.pointerEvents = 'none'; // prevent clicking in preview
+    cloneRef.current = clone;
+    
+    previewContainerRef.current.appendChild(clone);
+
+    return () => {
+      cloneRef.current = null;
+    };
   }, [isOpen, targetElement]);
 
+  // 2. Apply updates instantly whenever tempStyles/tempName changes
   useEffect(() => {
-    if (clonedElementRef.current) {
-      applyElementUpdates(clonedElementRef.current, tempName, tempStyles);
+    if (cloneRef.current) {
+      applyElementUpdates(cloneRef.current, tempName, tempStyles);
     }
-  }, [tempName, tempStyles]);
+  }, [tempName, tempStyles, isOpen]);
 
   return (
     <div
